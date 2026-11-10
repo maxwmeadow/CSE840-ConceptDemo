@@ -283,41 +283,27 @@
   .legend-chips { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); margin-top: 6px; }
   .chip::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
 
-  /* ---------- Mode 2 scaffold ---------- */
+  /* ---------- Mode 2 ---------- */
   .mode2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   @media (max-width: 1100px) { .mode2 { grid-template-columns: 1fr; } }
-  .blueprint {
-    border: 2px dashed #93c5fd;
-    background: repeating-linear-gradient(45deg, #ffffff, #ffffff 12px, #f8fbff 12px, #f8fbff 24px);
+  #panel-mode2 .plot { height: 340px; margin: 12px 0; }
+  #panel-mode2 .plot.short { height: 260px; }
+  .m2-ctl { margin: 14px 0; }
+  .m2-ctl label { display: block; font-weight: 650; margin-bottom: 5px; }
+  .m2-ctl input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .m2-ctl input[type="number"], .m2-ctl select {
+    padding: 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    max-width: 100%;
+    font: inherit;
   }
-  .blueprint .tag {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #1d4ed8;
-    background: var(--accent-soft);
-    padding: 3px 8px;
-    border-radius: 999px;
-    margin-bottom: 8px;
-  }
-  .placeholder-plot {
-    height: 320px;
-    border: 1px dashed var(--faint);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: var(--muted);
-    font-size: 14px;
-    padding: 16px;
-    background: rgba(255, 255, 255, 0.8);
-    margin: 12px 0;
-  }
-  .todo-list { font-size: 14.5px; padding-left: 20px; margin: 6px 0 0; }
-  .todo-list code, .doc code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  .m2-predict { padding: 14px; border: 1px solid #c7d2fe; border-radius: 10px; background: var(--indigo-soft); margin: 14px 0; }
+  .m2-predict button { margin: 5px 4px; }
+  .m2-readout { padding: 15px; border: 1px solid var(--line); background: var(--soft); border-radius: 10px; line-height: 1.8; }
+  .m2-readout b { color: var(--ink); }
+  .examples-list { font-size: 14.5px; padding-left: 20px; margin: 6px 0 0; }
+  .examples-list code, .doc code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
 
   /* ---------- Documentation ---------- */
   .docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
@@ -576,56 +562,85 @@
     </div>
   </div>
 
-  <!-- ===================== MODE 2 (PARTNER SCAFFOLD) ===================== -->
+  <!-- ===================== MODE 2 ===================== -->
   <div class="tabpanel" role="tabpanel" id="panel-mode2" aria-labelledby="tab-mode2" hidden>
     <div class="mode2">
 
-      <section class="card blueprint" id="m2a-card">
-        <span class="tag">Blueprint · Alex</span>
+      <section class="card" id="m2a-card">
+        <p class="eyebrow">Interactive exploration</p>
         <h2>Mode 2(a): Semidefinite Boundary Cases</h2>
         <p>
           All three functions have a critical point at the origin with the <em>same</em> Hessian
           $Hf(0,0) = \begin{bmatrix} 2 &amp; 0 \\ 0 &amp; 0 \end{bmatrix}$, which is positive semi-definite but not definite.
           Theorem (ii) does not apply, so the higher-order terms decide:
         </p>
-        <ul class="todo-list">
+        <ul class="examples-list">
           <li>$f_1(x,y) = x^2 + y^4$: strict local minimum (the $y^4$ term curves up).</li>
           <li>$f_2(x,y) = x^2 + y^3$: saddle point, neither a min nor a max (the $y^3$ term changes sign).</li>
           <li>$f_3(x,y) = x^2$: local minimum that is not strict (flat along the $y$-axis).</li>
         </ul>
-        <div class="placeholder-plot" id="m2a-plot">
-          <div>Placeholder for <code>updateBoundaryPlot()</code>: side-by-side surfaces or contours of $f_1, f_2, f_3$ and
-          their slices along $y$ ($x = 0$).</div>
+        <div class="plot" id="m2a-plot"></div>
+        <div id="m2a-controls">
+          <div class="m2-predict">
+            <b>Predict before exploring:</b> These functions have the same Hessian at $(0,0)$. Must they have the same
+            type of critical point?
+            <button class="btn" data-answer="yes">Yes</button>
+            <button class="btn" data-answer="no">No</button>
+            <div id="m2-predict-answer" aria-live="polite"></div>
+          </div>
+          <div class="m2-ctl">
+            <label for="m2-case">Choose a function</label>
+            <select id="m2-case">
+              <option value="quartic">x² + y⁴</option>
+              <option value="cubic">x² + y³</option>
+              <option value="flat">x²</option>
+            </select>
+          </div>
+          <div class="m2-ctl">
+            <label for="m2-zoom">Plot range: ±<output id="m2-zoom-value">1.00</output></label>
+            <input type="range" id="m2-zoom" min="0.4" max="1.5" step="0.05" value="1">
+          </div>
+          <div id="m2a-readout" class="m2-readout" aria-live="polite"></div>
+          <h3>Slice along the zero-eigenvalue direction (x = 0)</h3>
+          <div id="m2a-slice" class="plot short"></div>
         </div>
-        <div id="m2a-controls" class="small muted">Controls placeholder (for example a function selector and a zoom slider).</div>
-        <h3>TODO checklist</h3>
-        <ul class="todo-list">
-          <li>Render the three surfaces or contours on $[-1,1]^2$ into <code>#m2a-plot</code>.</li>
-          <li>Show the identical $Hf(0,0)$ readout and the different classification for each function.</li>
-          <li>Plot the slice $g(t) = f(0, t)$: $t^4$, $t^3$, $0$, where $g''(0) = 0$ in all three cases.</li>
-        </ul>
       </section>
 
-      <section class="card blueprint" id="m2b-card">
-        <span class="tag">Blueprint · Alex</span>
+      <section class="card" id="m2b-card">
+        <p class="eyebrow">Interactive exploration</p>
         <h2>Mode 2(b): Linear Least Squares</h2>
         <p>
           Lecture 16 (pp. 7–8): weight vector $w \in \mathbb{R}^n$, target $y$, design matrix $A$, and objective
           $$f(w) = \|y - Aw\|_2^2, \qquad \nabla f(w) = -2A^T(y - Aw).$$
-          Differentiating the gradient once more gives the constant Hessian $Hf(w) = 2A^TA$. Since $u^T(2A^TA)u = 2\|Au\|_2^2 \ge 0$, the Hessian is always positive semi-definite, so every critical point is
+          Differentiating the gradient once more gives the constant Hessian $Hf(w) = 2A^TA$. Since
+          $u^T(2A^TA)u = 2\|Au\|_2^2 \ge 0$, the Hessian is always positive semi-definite, so every critical point is
           a global minimum. It is positive definite (unique minimizer) exactly when $A$ has full column rank.
         </p>
-        <div class="placeholder-plot" id="m2b-plot">
-          <div>Placeholder for <code>updateLeastSquaresPlot()</code>: data fit plus contours of $f(w)$ over $(w_1, w_2)$
-          with the eigen-axes of $2A^TA$.</div>
+        <div class="plot" id="m2b-plot"></div>
+        <div id="m2b-controls">
+          <div class="m2-predict">
+            <b>Predict:</b> What happens to the least-squares loss when the two columns of $A$ become identical?
+            <button class="btn" data-ls-answer="unique">Unique bowl</button>
+            <button class="btn" data-ls-answer="flat">Flat valley</button>
+            <div id="m2-ls-answer" aria-live="polite"></div>
+          </div>
+          <div class="m2-ctl">
+            <label for="m2-col">Column similarity: <output id="m2-col-value">0%</output></label>
+            <input type="range" id="m2-col" min="0" max="100" step="5" value="0">
+            <p class="small muted">At 100%, both columns are identical and $A$ loses rank.</p>
+          </div>
+          <div class="m2-ctl">
+            <label for="m2-count">Number of observations: <output id="m2-count-value">24</output></label>
+            <input type="range" id="m2-count" min="8" max="40" step="1" value="24">
+          </div>
+          <div class="m2-ctl">
+            <label for="m2-seed">Seed (shared with Mode 1)</label>
+            <input id="m2-seed" type="number" step="1" value="840">
+          </div>
+          <div id="m2b-readout" class="m2-readout" aria-live="polite"></div>
+          <h3>Observed vs fitted values</h3>
+          <div id="m2b-data" class="plot short"></div>
         </div>
-        <div id="m2b-controls" class="small muted">Controls placeholder (for example number of points, a collinearity slider, and the shared Seed).</div>
-        <h3>TODO checklist</h3>
-        <ul class="todo-list">
-          <li>Generate data with <code>makeLeastSquaresData(seed, m)</code> (seeded <code>mulberry32</code>, already wired).</li>
-          <li>Compute $2A^TA$, its eigenvalues, and the normal-equation solution $w^\ast$ from $A^TA\,w^\ast = A^Ty$.</li>
-          <li>Add a rank-deficient case (two identical columns) that gives $\lambda_{\min} = 0$ and a flat valley of minimizers.</li>
-        </ul>
       </section>
 
     </div>
@@ -740,7 +755,9 @@
           differences, checks the eigenvalues using <code>numpy.linalg.eigvalsh</code>, and confirms that $2A^TA
           \succeq 0$. It also tests six column-similarity settings (0%, 25%, 50%, 75%, 95%, and 100%)
           and confirms that rank deficiency produces $\lambda_{\min}=0$. All mathematical checks passed.</li>
-      <li>Before submission, open the final HTML using <code>file://</code>, inspect the console, and compare browser readouts with the independent test cases.</li>
+      <li>In the browser we confirmed that the page loads from <code>file://</code> with no console errors in either mode,
+        that the Mode 1 readout matches <code>verify_hessian.py</code> for each preset, and that Mode 2(b) at 100% column
+        similarity shows eigenvalues $96$ and $0$ for $m = 24$ observations (rank 1), matching <code>verify_mode2.py</code>.</li>
     </ul>
   </section>
 
@@ -1620,184 +1637,425 @@ function selectTab(name) {
 }
 
 /* =====================================================================
- * 7. MODE 2 — PARTNER SCAFFOLD (Alex)
+ * 7. MODE 2 — SEMIDEFINITE BOUNDARY CASES (2a) AND LINEAR LEAST SQUARES (2b)
  * ---------------------------------------------------------------------
- * Layout hooks already in the HTML:
- *   #m2a-plot, #m2a-controls   -> Mode 2(a) semidefinite boundary cases
- *   #m2b-plot, #m2b-controls   -> Mode 2(b) linear least squares
- * Shared utilities you can reuse: mulberry32(seed), gaussian(rng), state.seed,
- *   PLOT_CONFIG, COLORS, signColor(lambda), eigSym2(a, b, c), classify(l1, l2),
- *   buildGrid(n), tex(el, s, display), renderMathIn(el).
- * Keep loops multi-line with braces (course style requirement).
+ * Markup lives in #panel-mode2; this section only wires controls and renders.
+ * Randomness uses the shared state.seed (mulberry32), never Math.random().
  * ===================================================================== */
 
-const Mode2 = { initialized: false, boundary: "quartic", zoom: 1, m: 24, collinearity: 0, seed: 840 };
-
-const BOUNDARY_CASES = {
-  quartic: { name: "x² + y⁴", label: "Strict local minimum", why: "Both terms are nonnegative, and both vanish only at the origin.", fn: function(x,y) { return x*x + y**4; }, slice: function(t) { return t**4; } },
-  cubic: { name: "x² + y³", label: "Saddle point", why: "Along x = 0, y³ is positive for y > 0 and negative for y < 0.", fn: function(x,y) { return x*x + y**3; }, slice: function(t) { return t**3; } },
-  flat: { name: "x²", label: "Non-strict local minimum", why: "The entire line x = 0 has the same minimum value 0.", fn: function(x,y) { return x*x; }, slice: function(t) { return 0; } }
+const Mode2 = {
+  initialized: false,
+  boundary: "quartic",
+  zoom: 1,
+  m: 24,
+  collinearity: 0
 };
 
+const MODE2_PLOT_IDS = ["m2a-plot", "m2a-slice", "m2b-plot", "m2b-data"];
+
+/** The three functions with Hf(0,0) = diag(2, 0). slice(t) = f(0, t). */
+const BOUNDARY_CASES = {
+  quartic: {
+    name: "x² + y⁴",
+    label: "Strict local minimum",
+    why: "Both terms are nonnegative, and both vanish only at the origin.",
+    fn: function (x, y) {
+      return x * x + y ** 4;
+    },
+    slice: function (t) {
+      return t ** 4;
+    }
+  },
+  cubic: {
+    name: "x² + y³",
+    label: "Saddle point",
+    why: "Along x = 0, y³ is positive for y > 0 and negative for y < 0.",
+    fn: function (x, y) {
+      return x * x + y ** 3;
+    },
+    slice: function (t) {
+      return t ** 3;
+    }
+  },
+  flat: {
+    name: "x²",
+    label: "Non-strict local minimum",
+    why: "The entire line x = 0 has the same minimum value 0.",
+    fn: function (x, y) {
+      return x * x;
+    },
+    slice: function () {
+      return 0;
+    }
+  }
+};
+
+/** Evenly spaced points on [-limit, limit]. */
 function mode2Grid(limit, count) {
   const out = [];
   for (let i = 0; i < count; i++) {
-    out.push(-limit + 2*limit*i/(count-1));
+    out.push(-limit + (2 * limit * i) / (count - 1));
   }
   return out;
 }
 
+/** One-time setup: bind the Mode 2 controls, then render both sub-modes. */
 function initMode2() {
   if (Mode2.initialized) {
+    // Plotly needs a resize after its container becomes visible again.
     if (window.Plotly) {
-      for (const id of ["m2a-plot", "m2a-slice", "m2b-plot", "m2b-data"]) {
-        const el = document.getElementById(id);
-        if (el && el.data) { Plotly.Plots.resize(el); }
+      for (let i = 0; i < MODE2_PLOT_IDS.length; i++) {
+        const el = document.getElementById(MODE2_PLOT_IDS[i]);
+        if (el && el.data) {
+          Plotly.Plots.resize(el);
+        }
       }
     }
     return;
   }
   Mode2.initialized = true;
-  const ca = document.getElementById("m2a-controls");
-  const cb = document.getElementById("m2b-controls");
-  document.getElementById("m2a-card").classList.remove("blueprint");
-  document.getElementById("m2b-card").classList.remove("blueprint");
-  for (const el of document.querySelectorAll("#panel-mode2 .tag")) { el.textContent = "Interactive exploration"; }
-  for (const el of document.querySelectorAll("#panel-mode2 h3")) {
-    if (el.textContent === "TODO checklist") { el.remove(); }
-  }
-  // Remove only the final TODO lists; retain the three mathematical examples.
-  for (const id of ["m2a-card", "m2b-card"]) {
-    const lists = document.querySelectorAll("#" + id + " > ul.todo-list");
-    if (lists.length) { lists[lists.length - 1].remove(); }
-  }
-  document.getElementById("m2a-plot").className = "plot";
-  document.getElementById("m2a-plot").innerHTML = "";
-  document.getElementById("m2b-plot").className = "plot";
-  document.getElementById("m2b-plot").innerHTML = "";
-  ca.className = "";
-  cb.className = "";
-  ca.innerHTML = `<div class="m2-predict"><b>Predict before exploring:</b> These functions have the same Hessian at (0,0). Must they have the same type of critical point? <button class="btn" data-answer="yes">Yes</button> <button class="btn" data-answer="no">No</button><div id="m2-predict-answer" aria-live="polite"></div></div>
-    <div class="m2-ctl"><label for="m2-case">Choose a function</label><select id="m2-case"><option value="quartic">x² + y⁴</option><option value="cubic">x² + y³</option><option value="flat">x²</option></select></div>
-    <div class="m2-ctl"><label for="m2-zoom">Plot range: ±<output id="m2-zoom-value">1.00</output></label><input type="range" id="m2-zoom" min="0.4" max="1.5" step="0.05" value="1"></div>
-    <div id="m2a-readout" class="m2-readout" aria-live="polite"></div><h3>Slice along the zero-eigenvalue direction (x = 0)</h3><div id="m2a-slice" class="plot short"></div>`;
-  cb.innerHTML = `<div class="m2-predict"><b>Predict:</b> What happens to the least-squares loss when the two columns of A become identical? <button class="btn" data-ls-answer="unique">Unique bowl</button> <button class="btn" data-ls-answer="flat">Flat valley</button><div id="m2-ls-answer" aria-live="polite"></div></div>
-    <div class="m2-ctl"><label for="m2-col">Column similarity: <output id="m2-col-value">0%</output></label><input type="range" id="m2-col" min="0" max="100" step="5" value="0"><p class="small muted">At 100%, both columns are identical and A loses rank.</p></div>
-    <div class="m2-ctl"><label for="m2-count">Number of observations: <output id="m2-count-value">24</output></label><input type="range" id="m2-count" min="8" max="40" step="1" value="24"></div>
-    <div class="m2-ctl"><label for="m2-seed">Reproducible random seed</label><input id="m2-seed" type="number" step="1" value="840"></div>
-    <div id="m2b-readout" class="m2-readout" aria-live="polite"></div><h3>Observed vs fitted values</h3><div id="m2b-data" class="plot short"></div>`;
-  const extraStyle = document.createElement("style");
-  extraStyle.textContent = `.m2-ctl{margin:14px 0}.m2-ctl label{display:block;font-weight:650;margin-bottom:5px}.m2-ctl input[type=range]{width:100%;accent-color:#2563eb}.m2-ctl input[type=number],.m2-ctl select{padding:8px;border:1px solid #cbd5e1;border-radius:7px;max-width:100%;font:inherit}.m2-predict{padding:14px;border:1px solid #c7d2fe;border-radius:10px;background:#eef2ff;margin:14px 0}.m2-predict button{margin:5px 4px}.m2-readout{padding:15px;border:1px solid #e2e8f0;background:#f8fafc;border-radius:10px;line-height:1.8}.m2-readout b{color:#0f172a}#panel-mode2 .plot{height:340px}#panel-mode2 .plot.short{height:260px}`;
-  document.head.appendChild(extraStyle);
-  ca.querySelectorAll("[data-answer]").forEach(function(btn) {
-    btn.addEventListener("click", function() {
+
+  const boundaryAnswers = document.querySelectorAll("#m2a-controls [data-answer]");
+  for (let i = 0; i < boundaryAnswers.length; i++) {
+    const btn = boundaryAnswers[i];
+    btn.addEventListener("click", function () {
       const correct = btn.dataset.answer === "no";
-      document.getElementById("m2-predict-answer").textContent = correct ? "Correct: higher-order terms can change the classification." : "Not necessarily: the zero eigenvalue leaves the Hessian test inconclusive.";
+      document.getElementById("m2-predict-answer").textContent = correct ?
+        "Correct: higher-order terms can change the classification." :
+        "Not necessarily: the zero eigenvalue leaves the Hessian test inconclusive.";
     });
-  });
-  cb.querySelectorAll("[data-ls-answer]").forEach(function(btn) {
-    btn.addEventListener("click", function() {
-      document.getElementById("m2-ls-answer").textContent = btn.dataset.lsAnswer === "flat" ? "Correct: a zero eigenvalue produces a flat direction of minimizers." : "When the columns coincide, the solution is no longer unique: a flat valley appears.";
+  }
+
+  const lsAnswers = document.querySelectorAll("#m2b-controls [data-ls-answer]");
+  for (let i = 0; i < lsAnswers.length; i++) {
+    const btn = lsAnswers[i];
+    btn.addEventListener("click", function () {
+      document.getElementById("m2-ls-answer").textContent = btn.dataset.lsAnswer === "flat" ?
+        "Correct: a zero eigenvalue produces a flat direction of minimizers." :
+        "When the columns coincide, the solution is no longer unique: a flat valley appears.";
     });
+  }
+
+  document.getElementById("m2-case").addEventListener("change", function (ev) {
+    Mode2.boundary = ev.target.value;
+    updateBoundaryPlot();
   });
-  document.getElementById("m2-case").addEventListener("change", function(ev) { Mode2.boundary = ev.target.value; updateBoundaryPlot(); });
-  document.getElementById("m2-zoom").addEventListener("input", function(ev) { Mode2.zoom = Number(ev.target.value); updateBoundaryPlot(); });
-  document.getElementById("m2-col").addEventListener("input", function(ev) { Mode2.collinearity = Number(ev.target.value)/100; updateLeastSquaresPlot(); });
-  document.getElementById("m2-count").addEventListener("input", function(ev) { Mode2.m = Number(ev.target.value); updateLeastSquaresPlot(); });
-  document.getElementById("m2-seed").addEventListener("change", function(ev) { Mode2.seed = Number.isFinite(Number(ev.target.value)) ? Math.trunc(Number(ev.target.value)) : 840; ev.target.value = Mode2.seed; updateLeastSquaresPlot(); });
+  document.getElementById("m2-zoom").addEventListener("input", function (ev) {
+    Mode2.zoom = Number(ev.target.value);
+    updateBoundaryPlot();
+  });
+  document.getElementById("m2-col").addEventListener("input", function (ev) {
+    Mode2.collinearity = Number(ev.target.value) / 100;
+    updateLeastSquaresPlot();
+  });
+  document.getElementById("m2-count").addEventListener("input", function (ev) {
+    Mode2.m = Number(ev.target.value);
+    updateLeastSquaresPlot();
+  });
+  document.getElementById("m2-seed").value = state.seed;
+  document.getElementById("m2-seed").addEventListener("change", function (ev) {
+    setSharedSeed(ev.target.value);
+  });
+
   updateBoundaryPlot();
   updateLeastSquaresPlot();
 }
 
+/** Mode 2(a): surface of the selected function plus its slice along x = 0. */
 function updateBoundaryPlot() {
   const example = BOUNDARY_CASES[Mode2.boundary];
   const grid = mode2Grid(Mode2.zoom, 43);
-  const z = grid.map(function(y) { return grid.map(function(x) { return example.fn(x,y); }); });
-  const h = eigSym2(2,0,0);
+  const z = [];
+  for (let j = 0; j < grid.length; j++) {
+    const row = [];
+    for (let i = 0; i < grid.length; i++) {
+      row.push(example.fn(grid[i], grid[j]));
+    }
+    z.push(row);
+  }
+  const h = eigSym2(2, 0, 0);
+
   document.getElementById("m2-zoom-value").textContent = Mode2.zoom.toFixed(2);
-  document.getElementById("m2a-readout").innerHTML = `<b>Selected:</b> ${example.name}<br><b>H(0,0):</b> [[2, 0], [0, 0]]<br><b>Eigenvalues:</b> ${fmt(h.lambda1)}, ${fmt(h.lambda2)} &nbsp; <b>det H:</b> ${fmt(h.det)}<br><b>Hessian test:</b> Inconclusive (positive semidefinite)<br><b>Actual classification:</b> ${example.label}<br><b>Why:</b> ${example.why}`;
-  if (!window.Plotly) { return; }
-  Plotly.react("m2a-plot", [{type:"surface",x:grid,y:grid,z:z,colorscale:"Viridis",showscale:false,hovertemplate:"x=%{x:.2f}<br>y=%{y:.2f}<br>f=%{z:.3f}<extra></extra>"}], {margin:{l:0,r:0,b:0,t:10},scene:{xaxis:{title:"x"},yaxis:{title:"y"},zaxis:{title:"f(x,y)"},aspectmode:"cube"},uirevision:"m2-boundary"}, PLOT_CONFIG);
-  const ts = mode2Grid(Mode2.zoom,101);
-  Plotly.react("m2a-slice", [{type:"scatter",mode:"lines",x:ts,y:ts.map(example.slice),line:{color:COLORS.zero,width:3},name:"g(t)"},{type:"scatter",mode:"markers",x:[0],y:[0],marker:{size:9,color:COLORS.ink},name:"critical point"}], {margin:{l:55,r:12,b:46,t:14},xaxis:{title:"t (along y-axis)",zeroline:true},yaxis:{title:"g(t) = f(0,t)",zeroline:true},showlegend:false,annotations:[{xref:"paper",yref:"paper",x:0.98,y:0.96,xanchor:"right",text:"g″(0) = 0",showarrow:false,bgcolor:"white"}]},PLOT_CONFIG);
+  document.getElementById("m2a-readout").innerHTML =
+    "<b>Selected:</b> " + example.name +
+    "<br><b>Hf(0,0):</b> [[2, 0], [0, 0]]" +
+    "<br><b>Eigenvalues:</b> " + fmt(h.lambda1) + ", " + fmt(h.lambda2) +
+    " &nbsp; <b>det Hf:</b> " + fmt(h.det) +
+    "<br><b>Hessian test:</b> Inconclusive (positive semi-definite)" +
+    "<br><b>Actual classification:</b> " + example.label +
+    "<br><b>Why:</b> " + example.why;
+
+  if (!window.Plotly) {
+    return;
+  }
+
+  Plotly.react("m2a-plot", [
+    {
+      type: "surface",
+      x: grid,
+      y: grid,
+      z: z,
+      colorscale: "Viridis",
+      showscale: false,
+      hovertemplate: "x=%{x:.2f}<br>y=%{y:.2f}<br>f=%{z:.3f}<extra></extra>"
+    }
+  ], {
+    margin: { l: 0, r: 0, b: 0, t: 10 },
+    scene: {
+      xaxis: { title: "x" },
+      yaxis: { title: "y" },
+      zaxis: { title: "f(x,y)" },
+      aspectmode: "cube"
+    },
+    uirevision: "m2-boundary"
+  }, PLOT_CONFIG);
+
+  const ts = mode2Grid(Mode2.zoom, 101);
+  const gs = [];
+  for (let k = 0; k < ts.length; k++) {
+    gs.push(example.slice(ts[k]));
+  }
+  Plotly.react("m2a-slice", [
+    {
+      type: "scatter",
+      mode: "lines",
+      x: ts,
+      y: gs,
+      line: { color: COLORS.zero, width: 3 },
+      name: "g(t)"
+    },
+    {
+      type: "scatter",
+      mode: "markers",
+      x: [0],
+      y: [0],
+      marker: { size: 9, color: COLORS.ink },
+      name: "critical point"
+    }
+  ], {
+    margin: { l: 55, r: 12, b: 46, t: 14 },
+    xaxis: { title: "t (along y-axis)", zeroline: true },
+    yaxis: { title: "g(t) = f(0,t)", zeroline: true },
+    showlegend: false,
+    annotations: [
+      {
+        xref: "paper",
+        yref: "paper",
+        x: 0.98,
+        y: 0.96,
+        xanchor: "right",
+        text: "g″(0) = 0",
+        showarrow: false,
+        bgcolor: "white"
+      }
+    ]
+  }, PLOT_CONFIG);
 }
 
-/** Deterministic synthetic observations; x is stored separately for the fitted-value plot. */
-function makeLeastSquaresData(seed,m) {
+/** Deterministic synthetic observations y = 0.5 + 1.5 x + noise; x is kept for the fitted-value plot. */
+function makeLeastSquaresData(seed, m) {
   const rng = mulberry32(seed);
-  const wTrue = [0.5,1.5];
-  const A = [], y = [], xs = [];
-  for (let i=0;i<m;i++) {
-    const x = -2 + 4*rng();
+  const wTrue = [0.5, 1.5];
+  const A = [];
+  const y = [];
+  const xs = [];
+  for (let i = 0; i < m; i++) {
+    const x = -2 + 4 * rng();
     xs.push(x);
-    A.push([1,x]);
-    y.push(wTrue[0] + wTrue[1]*x + 0.3*gaussian(rng));
+    A.push([1, x]);
+    y.push(wTrue[0] + wTrue[1] * x + 0.3 * gaussian(rng));
   }
-  return {A:A,y:y,xs:xs,wTrue:wTrue};
+  return { A: A, y: y, xs: xs, wTrue: wTrue };
 }
 
-/** A(s) = [1, (1-s)x+s], so the columns coincide exactly when s=1. */
-function computeLeastSquares(seed,m,s) {
-  const data = makeLeastSquaresData(seed,m);
-  const A = data.A.map(function(row) { return [1,(1-s)*row[1]+s]; });
-  const y = data.y;
-  let aa=0,ab=0,cc=0,ay=0,by=0;
-  for (let i=0;i<m;i++) {
-    const u=A[i][0],v=A[i][1];
-    aa+=u*u; ab+=u*v; cc+=v*v;
-    ay+=u*y[i]; by+=v*y[i];
+/**
+ * A(s) = [1, (1 - s) x + s], so the columns coincide exactly when s = 1.
+ * Returns Hf(w) = 2 A^T A (as [h11, h12, h22]), its eigen-decomposition, one minimizer w*, and the loss.
+ */
+function computeLeastSquares(seed, m, s) {
+  const data = makeLeastSquaresData(seed, m);
+  const A = [];
+  for (let i = 0; i < m; i++) {
+    A.push([1, (1 - s) * data.A[i][1] + s]);
   }
-  const h = eigSym2(2*aa,2*ab,2*cc);
-  const determinant = aa*cc-ab*ab;
+  const y = data.y;
+
+  let aa = 0;
+  let ab = 0;
+  let cc = 0;
+  let ay = 0;
+  for (let i = 0; i < m; i++) {
+    const u = A[i][0];
+    const v = A[i][1];
+    aa += u * u;
+    ab += u * v;
+    cc += v * v;
+    ay += u * y[i];
+  }
+  const h = eigSym2(2 * aa, 2 * ab, 2 * cc);
+
   let w;
-  if (s===1) {
-    // Minimum-norm solution of w1+w2=mean(y); avoids singular normal-equation inversion.
-    const mean = ay/m;
-    w=[mean/2,mean/2];
+  if (s === 1) {
+    // Minimum-norm solution of w1 + w2 = mean(y); avoids inverting the singular normal equations.
+    const mean = ay / m;
+    w = [mean / 2, mean / 2];
   } else {
     // Centered regression avoids catastrophic cancellation near the rank boundary.
-    const vbar=ab/m, ybar=ay/m;
-    let cov=0, variance=0;
-    for (let i=0;i<m;i++) {
-      const dv=A[i][1]-vbar;
-      cov+=dv*(y[i]-ybar);
-      variance+=dv*dv;
+    const vbar = ab / m;
+    const ybar = ay / m;
+    let cov = 0;
+    let variance = 0;
+    for (let i = 0; i < m; i++) {
+      const dv = A[i][1] - vbar;
+      cov += dv * (y[i] - ybar);
+      variance += dv * dv;
     }
-    const slope=cov/variance;
-    w=[ybar-slope*vbar,slope];
+    const slope = cov / variance;
+    w = [ybar - slope * vbar, slope];
   }
-  const loss = function(w1,w2) {
-    let total=0;
-    for (let i=0;i<m;i++) {
-      const residual=y[i]-A[i][0]*w1-A[i][1]*w2;
-      total+=residual*residual;
+
+  const loss = function (w1, w2) {
+    let total = 0;
+    for (let i = 0; i < m; i++) {
+      const residual = y[i] - A[i][0] * w1 - A[i][1] * w2;
+      total += residual * residual;
     }
     return total;
   };
-  return {data:data,A:A,y:y,H:[2*aa,2*ab,2*cc],eig:h,w:w,loss:loss,minLoss:loss(w[0],w[1]),detNormal:determinant};
+
+  return {
+    data: data,
+    A: A,
+    y: y,
+    H: [2 * aa, 2 * ab, 2 * cc],
+    eig: h,
+    w: w,
+    loss: loss,
+    minLoss: loss(w[0], w[1])
+  };
 }
 
+/** Mode 2(b): loss contours over (w1, w2) plus observed vs fitted values. */
 function updateLeastSquaresPlot() {
-  const s=Mode2.collinearity;
-  const m=Mode2.m;
-  const calc=computeLeastSquares(Mode2.seed,m,s);
-  const h=calc.eig;
-  document.getElementById("m2-col-value").textContent = Math.round(s*100)+"%";
+  const s = Mode2.collinearity;
+  const m = Mode2.m;
+  const calc = computeLeastSquares(state.seed, m, s);
+  const h = calc.eig;
+  const w = calc.w;
+  const rankDef = (s === 1);
+
+  document.getElementById("m2-col-value").textContent = Math.round(s * 100) + "%";
   document.getElementById("m2-count-value").textContent = String(m);
-  const rankDef = s===1;
-  const w=calc.w;
-  document.getElementById("m2b-readout").innerHTML = `<b>H = 2AᵀA:</b> [[${fmt(calc.H[0],2)}, ${fmt(calc.H[1],2)}], [${fmt(calc.H[1],2)}, ${fmt(calc.H[2],2)}]]<br><b>Eigenvalues:</b> ${fmt(h.lambda1,4)}, ${fmt(h.lambda2,4)}<br><b>det H:</b> ${fmt(h.det,4)}<br><b>Matrix rank:</b> ${rankDef ? "1 (rank deficient)" : "2 (full column rank)"}<br><b>One minimizer w*:</b> (${fmt(w[0],3)}, ${fmt(w[1],3)})<br><b>Minimum loss:</b> ${fmt(calc.minLoss,4)}<br><b>Conclusion:</b> ${rankDef ? "Flat valley: infinitely many minimizers with w₁ + w₂ = "+fmt(w[0]+w[1],3)+"." : "Positive definite Hessian: unique global minimizer."}`;
-  if (!window.Plotly) { return; }
-  // Center the contour on one minimizer. A rank-deficient loss stays constant along (1,-1).
-  const offsets=mode2Grid(2.5,65);
-  const gx=offsets.map(function(d) { return w[0]+d; });
-  const gy=offsets.map(function(d) { return w[1]+d; });
-  const z=gy.map(function(w2) { return gx.map(function(w1) { return calc.loss(w1,w2); }); });
-  Plotly.react("m2b-plot", [{type:"contour",x:gx,y:gy,z:z,colorscale:"Viridis",contours:{coloring:"heatmap",showlabels:true},colorbar:{title:"Loss"},hovertemplate:"w₁=%{x:.2f}<br>w₂=%{y:.2f}<br>loss=%{z:.3f}<extra></extra>"},{type:"scatter",mode:"markers",x:[w[0]],y:[w[1]],marker:{size:11,color:"#ef4444",symbol:"x"},name:"One minimizer"}], {margin:{l:55,r:22,b:48,t:14},xaxis:{title:"w₁"},yaxis:{title:"w₂",scaleanchor:"x",scaleratio:1},showlegend:false},PLOT_CONFIG);
-  const pred=calc.A.map(function(row) { return row[0]*w[0]+row[1]*w[1]; });
-  const ids=[];
-  for (let i=0;i<m;i++) { ids.push(i+1); }
-  Plotly.react("m2b-data", [{type:"scatter",mode:"markers",x:ids,y:calc.y,name:"Observed y",marker:{color:COLORS.gd,size:7}},{type:"scatter",mode:"markers",x:ids,y:pred,name:"Predicted Aw*",marker:{color:COLORS.pos,size:7,symbol:"diamond"}}],{margin:{l:52,r:12,b:44,t:8},xaxis:{title:"Observation number"},yaxis:{title:"Target / prediction"},legend:{orientation:"h",y:1.16},showlegend:true},PLOT_CONFIG);
+
+  let conclusion;
+  if (rankDef) {
+    conclusion = "Flat valley: infinitely many minimizers with w₁ + w₂ = " + fmt(w[0] + w[1], 3) + ".";
+  } else {
+    conclusion = "Positive definite Hessian: unique global minimizer.";
+  }
+  document.getElementById("m2b-readout").innerHTML =
+    "<b>Hf(w) = 2AᵀA:</b> [[" + fmt(calc.H[0], 2) + ", " + fmt(calc.H[1], 2) + "], [" +
+    fmt(calc.H[1], 2) + ", " + fmt(calc.H[2], 2) + "]]" +
+    "<br><b>Eigenvalues:</b> " + fmt(h.lambda1, 4) + ", " + fmt(h.lambda2, 4) +
+    "<br><b>det Hf:</b> " + fmt(h.det, 4) +
+    "<br><b>Matrix rank:</b> " + (rankDef ? "1 (rank deficient)" : "2 (full column rank)") +
+    "<br><b>One minimizer w*:</b> (" + fmt(w[0], 3) + ", " + fmt(w[1], 3) + ")" +
+    "<br><b>Minimum loss:</b> " + fmt(calc.minLoss, 4) +
+    "<br><b>Conclusion:</b> " + conclusion;
+
+  if (!window.Plotly) {
+    return;
+  }
+
+  // Center the contour on one minimizer. A rank-deficient loss stays constant along (1, -1).
+  const offsets = mode2Grid(2.5, 65);
+  const gx = [];
+  const gy = [];
+  for (let i = 0; i < offsets.length; i++) {
+    gx.push(w[0] + offsets[i]);
+    gy.push(w[1] + offsets[i]);
+  }
+  const z = [];
+  for (let j = 0; j < gy.length; j++) {
+    const row = [];
+    for (let i = 0; i < gx.length; i++) {
+      row.push(calc.loss(gx[i], gy[j]));
+    }
+    z.push(row);
+  }
+
+  Plotly.react("m2b-plot", [
+    {
+      type: "contour",
+      x: gx,
+      y: gy,
+      z: z,
+      colorscale: "Viridis",
+      contours: { coloring: "heatmap", showlabels: true },
+      colorbar: { title: "Loss" },
+      hovertemplate: "w₁=%{x:.2f}<br>w₂=%{y:.2f}<br>loss=%{z:.3f}<extra></extra>"
+    },
+    {
+      type: "scatter",
+      mode: "markers",
+      x: [w[0]],
+      y: [w[1]],
+      marker: { size: 11, color: "#ef4444", symbol: "x" },
+      name: "One minimizer"
+    }
+  ], {
+    margin: { l: 55, r: 22, b: 48, t: 14 },
+    xaxis: { title: "w₁" },
+    yaxis: { title: "w₂", scaleanchor: "x", scaleratio: 1 },
+    showlegend: false
+  }, PLOT_CONFIG);
+
+  const ids = [];
+  const pred = [];
+  for (let i = 0; i < m; i++) {
+    ids.push(i + 1);
+    pred.push(calc.A[i][0] * w[0] + calc.A[i][1] * w[1]);
+  }
+  Plotly.react("m2b-data", [
+    {
+      type: "scatter",
+      mode: "markers",
+      x: ids,
+      y: calc.y,
+      name: "Observed y",
+      marker: { color: COLORS.gd, size: 7 }
+    },
+    {
+      type: "scatter",
+      mode: "markers",
+      x: ids,
+      y: pred,
+      name: "Predicted Aw*",
+      marker: { color: COLORS.pos, size: 7, symbol: "diamond" }
+    }
+  ], {
+    margin: { l: 52, r: 12, b: 44, t: 8 },
+    xaxis: { title: "Observation number" },
+    yaxis: { title: "Target / prediction" },
+    legend: { orientation: "h", y: 1.16 },
+    showlegend: true
+  }, PLOT_CONFIG);
+}
+
+/** Set the seed shared by Mode 1 (GD noise, random start) and Mode 2(b) (synthetic data). */
+function setSharedSeed(raw) {
+  let s = Math.floor(Number(raw));
+  if (!Number.isFinite(s)) {
+    s = DEFAULTS.seed;
+  }
+  state.seed = s;
+  startRng = mulberry32(s);
+  document.getElementById("n-seed").value = s;
+  document.getElementById("m2-seed").value = s;
+  scheduleUpdate();
+  if (Mode2.initialized) {
+    updateLeastSquaresPlot();
+  }
 }
 
 /* =====================================================================
@@ -1848,14 +2106,7 @@ function boot() {
     scheduleUpdate();
   });
   document.getElementById("n-seed").addEventListener("change", function (ev) {
-    let s = Math.floor(Number(ev.target.value));
-    if (!isFinite(s)) {
-      s = DEFAULTS.seed;
-    }
-    state.seed = s;
-    ev.target.value = s;
-    startRng = mulberry32(s);
-    scheduleUpdate();
+    setSharedSeed(ev.target.value);
   });
   document.getElementById("btn-random-start").addEventListener("click", function () {
     // Deterministic: the k-th click after setting a seed always gives the same point.
@@ -1866,9 +2117,8 @@ function boot() {
   });
   document.getElementById("btn-reset").addEventListener("click", function () {
     Object.assign(state, DEFAULTS);
-    startRng = mulberry32(DEFAULTS.seed);
     syncControlsFromState();
-    scheduleUpdate();
+    setSharedSeed(DEFAULTS.seed);
   });
 
   const presetButtons = document.querySelectorAll("[data-preset]");
